@@ -10,5 +10,12 @@ const getEnvValue = (varName: string) => {
   return ret.trim();
 };
 
+export const SUPABASE_URL = getEnvValue("SUPABASE_URL");
+export const SUPABASE_ANON_KEY = getEnvValue("SUPABASE_ANON_KEY");
+export const SUPABASE_JWT_SECRET = getEnvValue("SUPABASE_JWT_SECRET");
+export const SUPABASE_SERVICE_ROLE_KEY = getEnvValue(
+  "SUPABASE_SERVICE_ROLE_KEY"
+);
+
 export const TELEGRAM_API_KEY = getEnvValue("TELEGRAM_API_KEY");
 export const TELEGRAM_CHAT_ID = "644102713";

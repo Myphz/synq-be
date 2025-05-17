@@ -30,6 +30,6 @@ export const errorHandler = (err: Error, res: HttpResponse) => {
   console.log(err);
 
   res
-    .writeStatus("500 Server Error")
+    .writeStatus("500 Internal Server Error")
     .json({ success: false, message: `Server error: ${err.message}` });
 };

@@ -1,6 +1,7 @@
 import { AuthError } from "@supabase/supabase-js";
 import { HttpResponse } from "uWebSockets.js";
 import { ZodError } from "zod";
+import { AbortedError } from "../errors/aborted.js";
 import { telegramLog } from "../utils/telegram-log.js";
 
 export const errorHandler = (err: Error, res: HttpResponse) => {
@@ -8,6 +9,11 @@ export const errorHandler = (err: Error, res: HttpResponse) => {
     return res
       .writeStatus("400 Bad Request")
       .json({ success: false, message: "Invalid Parameters" });
+
+  if (err instanceof AbortedError)
+    return res
+      .writeStatus("400 Bad Request")
+      .json({ success: false, message: "Request Aborted" });
 
   if (err instanceof AuthError)
     return res

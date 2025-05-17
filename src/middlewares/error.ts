@@ -1,31 +1,29 @@
-import type { ErrorRequestHandler } from "express";
+import { AuthError } from "@supabase/supabase-js";
+import { HttpResponse } from "uWebSockets.js";
 import { ZodError } from "zod";
 import { telegramLog } from "../utils/telegram-log.js";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type OverrideReturnType<T extends (...args: any[]) => any, R> = (
-  ...args: Parameters<T>
-) => R;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ErrorHandlerAnyReturn = OverrideReturnType<ErrorRequestHandler, any>;
-
-export const errorHandler: ErrorHandlerAnyReturn = (
-  err: Error,
-  _req,
-  res,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _next
-) => {
+export const errorHandler = (err: Error, res: HttpResponse) => {
   if (err instanceof ZodError)
     return res
-      .status(400)
+      .writeStatus("400 Bad Request")
       .json({ success: false, message: "Invalid Parameters" });
+
+  if (err instanceof AuthError)
+    return res
+      .writeStatus("401 Unauthorized")
+      .json({ success: false, message: err.message });
+
+  // Supabase RLS error - equivalent to AuthError
+  if ("code" in err && err.code === "42501")
+    return res
+      .writeStatus("401 Unauthorized")
+      .json({ success: false, message: `Supabase error: ${err.message}` });
 
   if (process.env.NODE_ENV === "production") telegramLog(err);
   console.log(err);
 
   res
-    .status(500)
+    .writeStatus("500 Server Error")
     .json({ success: false, message: `Server error: ${err.message}` });
 };

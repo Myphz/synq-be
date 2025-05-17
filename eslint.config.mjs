@@ -22,7 +22,8 @@ export default [
       "unicorn/explicit-length-check": "off",
       "unicorn/catch-error-name": "off",
       "unicorn/no-await-expression-member": "off",
-      "unicorn/no-magic-array-flat-depth": "off"
+      "unicorn/no-magic-array-flat-depth": "off",
+      "unicorn/consistent-function-scoping": "off"
     }
   },
   {

@@ -4,6 +4,10 @@ const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 3000;
 
 const app = uWS.App();
 
+app.get("/", (res, req) => {
+  console.log("wow!");
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

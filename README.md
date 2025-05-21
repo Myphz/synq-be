@@ -1,4 +1,6 @@
-# Typescript Express Starter Template
+# SYNQ
+
+SYNQ is the next-gen real-time cyberpunk instant messaging app.
 
 This project was kickstarted using [Typescript Express Starter](https://github.com/Myphz/ts-express-starter).
 

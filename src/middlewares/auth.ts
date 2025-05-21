@@ -8,7 +8,7 @@ import {
 import { Middleware } from "../types/utils.js";
 import { toMiddleware } from "../utils/middleware.js";
 
-export const getJwtFromHeader = (req: HttpRequest) => {
+const getJwtFromHeader = (req: HttpRequest) => {
   const jwt = req.getHeader("authorization");
   if (!jwt) throw new AuthError();
 

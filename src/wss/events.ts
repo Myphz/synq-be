@@ -43,6 +43,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
 
   // Subscribe ws to all of its chats
   const userChats = await getAllChatsForUser(supabaseClient);
+  console.log(userChats);
 
   userChats.forEach((chat) => {
     ws.subscribe(chat.toString());

@@ -1,5 +1,5 @@
 import { app } from "../app.js";
-import { getPartecipantsForChat } from "../supabase/api.js";
+import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./events.js";
 import { Message } from "./messages.js";
@@ -9,12 +9,12 @@ export const processMessage = async (ws: AuthSocket, message: Message) => {
   const { user, supabaseClient } = ws.getUserData();
   // Client is trying to send a message to a new chat
   if (!ws.getTopics().includes(chatId.toString())) {
-    // subscribe all chat partecipants to this chat
-    const partecipants = await getPartecipantsForChat(supabaseClient, chatId);
+    // subscribe all chat members to this chat
+    const members = await getChatMembers(supabaseClient, chatId);
     // client is trying to send message to a chat he doesn't have access to?
-    if (!partecipants.includes(user.id)) throw new Error("TODO");
+    if (!members.includes(user.id)) throw new Error("TODO");
 
-    partecipants.forEach((userId) => {
+    members.forEach((userId) => {
       const wsClient = connectedClients.get(userId);
       if (!wsClient) return;
       wsClient.subscribe(chatId.toString());

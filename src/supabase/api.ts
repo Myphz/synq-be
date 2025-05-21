@@ -12,12 +12,12 @@ export const getAllChatsForUser = async (
   return userChats.map((ch) => ch.id);
 };
 
-export const getPartecipantsForChat = async (
+export const getChatMembers = async (
   supabaseClient: SupabaseClient<Database>,
   chatId: number
 ) => {
   const { data: userIds } = await supabaseClient
-    .from("chats_partecipants")
+    .from("chats_members")
     .select("user_id")
     .eq("chat_id", chatId)
     .throwOnError();

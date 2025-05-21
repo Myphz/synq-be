@@ -27,7 +27,7 @@ export type Database = {
         };
         Relationships: [];
       };
-      chats_partecipants: {
+      chats_members: {
         Row: {
           chat_id: number;
           joined_at: string;

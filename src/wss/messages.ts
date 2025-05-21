@@ -9,6 +9,9 @@ const sendMessageSchema = z.object({
   })
 });
 
+// Test message
+// {"type": "SEND_MESSAGE", "chatId": 1, "data": { "content": "mario" } }
+
 const typingUpdateSchema = z.object({
   type: z.literal("UPDATE_TYPING"),
   chatId: z.number(),

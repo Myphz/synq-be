@@ -30,7 +30,7 @@ export const processMessage = async (ws: AuthSocket, message: Message) => {
         .insert({ chat_id: chatId, text: content })
         .then();
 
-      console.log("send notification to offline guys");
+      // TODO: Send notification to offline members
       break;
     }
   }

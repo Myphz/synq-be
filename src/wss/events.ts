@@ -24,7 +24,10 @@ export const onUpgradeRequest: WebSocketBehavior<AuthData>["upgrade"] = async (
       res.upgrade(
         { user, supabaseClient },
         res.reqHeaders["sec-websocket-key"],
-        res.reqHeaders["sec-websocket-protocol"],
+        // This header's second value is used
+        // to pass authorization token (jwt) from the browser.
+        // https://stackoverflow.com/a/77060459
+        res.reqHeaders["sec-websocket-protocol"].split(",")?.[0],
         res.reqHeaders["sec-websocket-extensions"],
         ctx!
       );
@@ -55,7 +58,8 @@ export const onMessage: WebSocketBehavior<AuthData>["message"] = async (
   try {
     message = parseMessage(msg);
   } catch {
-    return console.log("bogus.");
+    // Bogus-amogus message, kill the client, how dare him
+    return ws.close();
   }
 
   await processMessage(ws, message);

@@ -7,10 +7,15 @@ import {
 } from "../supabase/supabase.js";
 
 const getJwtFromHeader = (res: HttpResponse) => {
-  const jwt = res.reqHeaders["authorization"];
+  // Browser cannot send custom headers when connecting to websocket.
+  // Use sec-websocket-protocol header's second value to pass the auth token.
+  // https://stackoverflow.com/a/77060459
+  const jwt =
+    res.reqHeaders["authorization"] ||
+    res.reqHeaders["sec-websocket-protocol"].split(",")?.[1];
   if (!jwt) throw new AuthError();
 
-  if (!jwt.startsWith("Bearer")) return jwt;
+  if (!jwt.startsWith("Bearer")) return jwt.trim();
   return jwt.slice("Bearer".length).trim();
 };
 

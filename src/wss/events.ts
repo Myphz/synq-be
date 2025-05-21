@@ -1,32 +1,43 @@
-import { z } from "zod";
+import type { WebSocket, WebSocketBehavior } from "uWebSockets.js";
+import { getSupabaseUser, getSupabaseUserClient } from "../middlewares/auth.js";
+import { AuthData } from "../types/utils.js";
+import { enhanceRequest } from "../utils/enhance.js";
 
-// This is a list of events that the client OR the server may send.
-const sendMessageSchema = z.object({
-  type: z.literal("SEND_MESSAGE"),
-  chatId: z.number(),
-  data: z.object({
-    content: z.string()
-  })
-});
+export const connectedClients = new Map<string, WebSocket<AuthData>>();
 
-const typingUpdateSchema = z.object({
-  type: z.literal("UPDATE_TYPING"),
-  chatId: z.number(),
-  data: z.object({
-    isTyping: z.boolean()
-  })
-});
+export const onUpgradeRequest: WebSocketBehavior<AuthData>["upgrade"] = async (
+  res,
+  req,
+  ctx
+) => {
+  enhanceRequest(res, req);
+  const user = await getSupabaseUser(res);
+  const supabaseClient = await getSupabaseUserClient(res);
 
-const readMessageSchema = z.object({
-  type: z.literal("READ_MESSAGE"),
-  chatId: z.number(),
-  data: z.object({
-    messageId: z.string()
-  })
-});
+  res.cork(() => {
+    res.upgrade(
+      { user, supabaseClient },
+      res.reqHeaders["sec-websocket-key"],
+      res.reqHeaders["sec-websocket-protocol"],
+      res.reqHeaders["sec-websocket-extensions"],
+      ctx!
+    );
+  });
+};
 
-export const event = z.discriminatedUnion("type", [
-  sendMessageSchema,
-  typingUpdateSchema,
-  readMessageSchema
-]);
+export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
+  ws
+) => {
+  const { user, supabaseClient } = ws.getUserData();
+  connectedClients.set(user.id, ws);
+
+  // Subscribe ws to all of its chats
+  const { data: userChats } = await supabaseClient
+    .from("chats")
+    .select("id")
+    .throwOnError();
+
+  userChats.forEach((chat) => {
+    ws.subscribe(chat.id.toString());
+  });
+};

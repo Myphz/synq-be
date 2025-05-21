@@ -1,16 +1,8 @@
 import { z } from "zod";
-import { event } from "./events.js";
 import { getConnectedClientsForChat } from "./helpers.js";
+import { message } from "./messages.js";
 
 type SocketId = string;
-
-export const connectedClients: Record<
-  SocketId,
-  {
-    chats: number[];
-    isTyping?: boolean;
-  }
-> = {};
 
 type SubscribeClientToChatParams = { socketId: number; chatIds: number[] };
 
@@ -23,7 +15,7 @@ export const subscribeClientToChats = ({
 
 type ProcessMessageParams = {
   socketId: number;
-  message: z.infer<typeof event>;
+  message: z.infer<typeof message>;
 };
 
 export const processMessage = ({ socketId, message }: ProcessMessageParams) => {

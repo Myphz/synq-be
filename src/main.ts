@@ -1,23 +1,27 @@
 import uWS from "uWebSockets.js";
-import { withAuth } from "./middlewares/auth.js";
+import { getSupabaseUser, getSupabaseUserClient } from "./middlewares/auth.js";
+import { enhanceRequest } from "./utils/enhance.js";
 
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 3000;
 
 const app = uWS.App();
 
 app.ws("/", {
-  upgrade: withAuth((res, req, ctx) => {
-    console.log(res);
+  upgrade: async (res, req, ctx) => {
+    enhanceRequest(res, req);
+    const user = await getSupabaseUser(res);
+    const client = await getSupabaseUserClient(res);
 
-    res.upgrade(
-      { uid: res.user._id },
-      req.getHeader("sec-websocket-key"),
-      req.getHeader("sec-websocket-protocol"),
-      req.getHeader("sec-websocket-extensions"),
-      ctx
-    );
-  }),
-
+    res.cork(() => {
+      res.upgrade(
+        { user, client },
+        res.reqHeaders["sec-websocket-key"],
+        res.reqHeaders["sec-websocket-protocol"],
+        res.reqHeaders["sec-websocket-extensions"],
+        ctx!
+      );
+    });
+  },
   open: (ws) => {
     console.log("connected");
     ws.subscribe("broadcast");

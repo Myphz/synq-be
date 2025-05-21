@@ -1,25 +1,23 @@
-import { HttpRequest, HttpResponse } from "uWebSockets.js";
+import { HttpResponse } from "uWebSockets.js";
 import { AuthError } from "../errors/auth-error.js";
 import {
   createClientAs,
   getUserForJWT,
   supabase
 } from "../supabase/supabase.js";
-import { Middleware } from "../types/utils.js";
-import { toMiddleware } from "../utils/middleware.js";
 
-const getJwtFromHeader = (req: HttpRequest) => {
-  const jwt = req.getHeader("authorization");
+const getJwtFromHeader = (res: HttpResponse) => {
+  const jwt = res.reqHeaders["authorization"];
   if (!jwt) throw new AuthError();
 
   if (!jwt.startsWith("Bearer")) return jwt;
   return jwt.slice("Bearer".length).trim();
 };
 
-export const getSupabaseUser = async (res: HttpResponse, req: HttpRequest) => {
+export const getSupabaseUser = async (res: HttpResponse) => {
   if (res._user) return res._user as Awaited<ReturnType<typeof getUserForJWT>>;
 
-  const jwt = getJwtFromHeader(req);
+  const jwt = getJwtFromHeader(res);
 
   try {
     const user = await getUserForJWT(jwt);
@@ -30,19 +28,18 @@ export const getSupabaseUser = async (res: HttpResponse, req: HttpRequest) => {
   }
 };
 
-export const getSupabaseUserClient = async (
-  res: HttpResponse,
-  req: HttpRequest
-) => {
-  if ("_client" in req && res._client) return res._client as typeof supabase;
-  const jwt = getJwtFromHeader(req);
+export const getSupabaseUserClient = async (res: HttpResponse) => {
+  if (res._client) return res._client as typeof supabase;
+  const jwt = getJwtFromHeader(res);
   // Validate JWT
-  await getSupabaseUser(res, req);
-  // Return supabase client that acts as the current user
-  return createClientAs(jwt);
+  await getSupabaseUser(res);
+  // Get supabase client that acts as the current user
+  const client = createClientAs(jwt);
+  res._client = client;
+  return client;
 };
 
-export const withAuth: Middleware = toMiddleware(async (res, req) => {
-  const client = await getSupabaseUserClient(res, req);
-  res._client = client;
-});
+// export const withAuth: Middleware = toMiddleware(async (res, req) => {
+//
+//
+// });

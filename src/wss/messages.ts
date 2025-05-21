@@ -25,8 +25,10 @@ const readMessageSchema = z.object({
   })
 });
 
-export const message = z.discriminatedUnion("type", [
+export const messageSchema = z.discriminatedUnion("type", [
   sendMessageSchema,
   typingUpdateSchema,
   readMessageSchema
 ]);
+
+export type Message = z.infer<typeof messageSchema>;

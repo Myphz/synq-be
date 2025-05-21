@@ -1,44 +1,40 @@
-import { z } from "zod";
-import { getConnectedClientsForChat } from "./helpers.js";
-import { message } from "./messages.js";
+import { app } from "../app.js";
+import { getPartecipantsForChat } from "../supabase/api.js";
+import { AuthSocket } from "../types/utils.js";
+import { connectedClients } from "./events.js";
+import { Message } from "./messages.js";
 
-type SocketId = string;
-
-type SubscribeClientToChatParams = { socketId: number; chatIds: number[] };
-
-export const subscribeClientToChats = ({
-  socketId,
-  chatIds
-}: SubscribeClientToChatParams) => {
-  connectedClients[socketId] = { chats: chatIds };
-};
-
-type ProcessMessageParams = {
-  socketId: number;
-  message: z.infer<typeof message>;
-};
-
-export const processMessage = ({ socketId, message }: ProcessMessageParams) => {
-  const client = connectedClients[socketId];
-  if (!client) throw new Error(`processMessage: client ${socketId} not found!`);
+export const processMessage = async (ws: AuthSocket, message: Message) => {
   const { chatId } = message;
-  const affectedClients = getConnectedClientsForChat(chatId);
+  const { user, supabaseClient } = ws.getUserData();
+  // Client is trying to send a message to a new chat
+  if (!ws.getTopics().includes(chatId.toString())) {
+    // subscribe all chat partecipants to this chat
+    const partecipants = await getPartecipantsForChat(supabaseClient, chatId);
+    // client is trying to send message to a chat he doesn't have access to?
+    if (!partecipants.includes(user.id)) throw new Error("TODO");
+
+    partecipants.forEach((userId) => {
+      const wsClient = connectedClients.get(userId);
+      if (!wsClient) return;
+      wsClient.subscribe(chatId.toString());
+    });
+  }
 
   switch (message.type) {
     case "SEND_MESSAGE": {
-      // add it to supabase & send notification to not-currently-connected chat partecipants
-      console.log("ok");
-      break;
-    }
+      const { content } = message.data;
 
-    case "UPDATE_TYPING": {
-      // Just update the client
-      connectedClients[socketId].isTyping = message.data.isTyping;
-      console.log("ok");
+      supabaseClient
+        .from("messages")
+        .insert({ chat_id: chatId, text: content })
+        .then();
 
+      console.log("send notification to offline guys");
       break;
     }
   }
 
-  // broadcast the same exact message to affectedClients
+  // Broadcast message to everyone
+  app.publish(chatId.toString(), JSON.stringify(message));
 };

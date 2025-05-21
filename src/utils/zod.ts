@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { messageSchema } from "../wss/messages.js";
 
 export const parseJsonString = z.string().transform((str, ctx) => {
   try {
@@ -9,13 +10,7 @@ export const parseJsonString = z.string().transform((str, ctx) => {
   }
 });
 
-export const unionOfLiterals = <T extends string | number>(
-  constants: readonly T[]
-) => {
-  const literals = constants.map((x) => z.literal(x)) as unknown as readonly [
-    z.ZodLiteral<T>,
-    z.ZodLiteral<T>,
-    ...z.ZodLiteral<T>[]
-  ];
-  return z.union(literals);
+export const parseMessage = (message: ArrayBuffer) => {
+  const msgString = new TextDecoder().decode(message).trim();
+  return messageSchema.parse(JSON.parse(msgString));
 };

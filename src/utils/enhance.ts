@@ -1,5 +1,6 @@
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
 import { AbortedError } from "../errors/aborted.js";
+import { errorHandler } from "../middlewares/error.js";
 
 export const enhanceRequest = (res: HttpResponse, req?: HttpRequest) => {
   if (res.isEnhanced) return;
@@ -12,6 +13,14 @@ export const enhanceRequest = (res: HttpResponse, req?: HttpRequest) => {
   });
 
   res.json = (data: object) => res.end(JSON.stringify(data));
+
+  res.withErrorCheck = async (cb: () => Promise<unknown> | unknown) => {
+    try {
+      await cb();
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  };
 
   if (!req) return;
 

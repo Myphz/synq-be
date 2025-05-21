@@ -1,10 +1,13 @@
-import { AuthError } from "@supabase/supabase-js";
 import { HttpResponse } from "uWebSockets.js";
 import { ZodError } from "zod";
 import { AbortedError } from "../errors/aborted.js";
+import { AuthError } from "../errors/auth-error.js";
+import { enhanceRequest } from "../utils/enhance.js";
 import { telegramLog } from "../utils/telegram-log.js";
 
 export const errorHandler = (err: Error, res: HttpResponse) => {
+  enhanceRequest(res);
+
   if (err instanceof ZodError)
     return res
       .writeStatus("400 Bad Request")

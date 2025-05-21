@@ -9,7 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never;
+      chats: {
+        Row: {
+          created_at: string;
+          id: number;
+          name: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+        };
+        Relationships: [];
+      };
+      chats_partecipants: {
+        Row: {
+          chat_id: number;
+          joined_at: string;
+          user_id: string;
+        };
+        Insert: {
+          chat_id?: number;
+          joined_at?: string;
+          user_id: string;
+        };
+        Update: {
+          chat_id?: number;
+          joined_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chats_partecipants_chat_id_fkey";
+            columns: ["chat_id"];
+            isOneToOne: false;
+            referencedRelation: "chats";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chats_partecipants_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      messages: {
+        Row: {
+          chat_id: number | null;
+          created_at: string;
+          id: number;
+          text: string;
+          user_id: string | null;
+        };
+        Insert: {
+          chat_id?: number | null;
+          created_at?: string;
+          id?: number;
+          text: string;
+          user_id?: string | null;
+        };
+        Update: {
+          chat_id?: number | null;
+          created_at?: string;
+          id?: number;
+          text?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_id_fkey";
+            columns: ["chat_id"];
+            isOneToOne: false;
+            referencedRelation: "chats";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "messages_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      profiles: {
+        Row: {
+          created_at: string;
+          id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

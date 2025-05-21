@@ -43,6 +43,6 @@ export const getSupabaseUserClient = async (
 };
 
 export const withAuth: Middleware = toMiddleware(async (res, req) => {
-  const user = await getSupabaseUserClient(res, req);
-  res._client = user;
+  const client = await getSupabaseUserClient(res, req);
+  res._client = client;
 });

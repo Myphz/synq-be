@@ -1,8 +1,8 @@
 import { app } from "./app.js";
 import {
-  onConnectionClose,
   onMessage,
   onNewConnection,
+  onSubscriptionChange,
   onUpgradeRequest
 } from "./wss/events.js";
 
@@ -12,7 +12,9 @@ app.ws("/", {
   upgrade: onUpgradeRequest,
   open: onNewConnection,
   message: onMessage,
-  close: onConnectionClose
+  subscription: onSubscriptionChange,
+  // @ts-expect-error its ok
+  close: (ws) => (ws.isClosed = true)
 });
 
 app.listen(PORT, () => {

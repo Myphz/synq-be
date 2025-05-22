@@ -1,6 +1,6 @@
 import { app } from "../app.js";
 import { AuthSocket } from "../types/utils.js";
-import { Message } from "./messages.js";
+import { Message } from "./protocol.js";
 
 type SendBroadcastMessageParams = {
   ws?: AuthSocket;

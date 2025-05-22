@@ -2,7 +2,7 @@ import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./events.js";
 import { sendBroadcastMessage } from "./helpers.js";
-import { Message } from "./messages.js";
+import { Message } from "./protocol.js";
 
 export const processMessage = async (ws: AuthSocket, message: Message) => {
   const chatId = Number(message.chatId);

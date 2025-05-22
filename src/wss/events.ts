@@ -1,12 +1,12 @@
 import type { WebSocket, WebSocketBehavior } from "uWebSockets.js";
 import { getSupabaseUser, getSupabaseUserClient } from "../middlewares/auth.js";
 import { getAllChatsForUser } from "../supabase/api.js";
-import { AuthData } from "../types/utils.js";
+import { AuthData, AuthSocket } from "../types/utils.js";
 import { enhanceRequest } from "../utils/enhance.js";
 import { parseMessage } from "../utils/zod.js";
 import { processMessage } from "./chats.js";
 import { sendBroadcastMessage } from "./helpers.js";
-import type { Message } from "./messages.js";
+import type { Message } from "./protocol.js";
 
 export const connectedClients = new Map<string, WebSocket<AuthData>>();
 
@@ -51,6 +51,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
     // Notify everyone else of our new online status
     const message: Message = {
       type: "UPDATE_USER_STATUS",
+      userId: user.id,
       chatId: chatId,
       data: {
         isOnline: true
@@ -61,24 +62,35 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   });
 };
 
-export const onConnectionClose: WebSocketBehavior<AuthData>["close"] = (ws) => {
+const onConnectionClose = (ws: AuthSocket) => {
   const { user } = ws.getUserData();
   connectedClients.delete(user.id);
+
+  // @ts-expect-error its ok
+  if (ws.isClosed) return;
 
   const chats = ws.getTopics();
   chats.forEach((chatId) => {
     // Notify everyone else of our new offline status
     const message: Message = {
       type: "UPDATE_USER_STATUS",
+      userId: user.id,
       chatId,
       data: {
         isOnline: false
       }
     };
 
-    sendBroadcastMessage({ ws, chatId, message });
+    sendBroadcastMessage({ chatId, message });
   });
 };
+
+export const onSubscriptionChange: WebSocketBehavior<AuthData>["subscription"] =
+  (ws, _, newCount) => {
+    if (newCount === 0) {
+      onConnectionClose(ws);
+    }
+  };
 
 export const onMessage: WebSocketBehavior<AuthData>["message"] = async (
   ws,
@@ -90,6 +102,7 @@ export const onMessage: WebSocketBehavior<AuthData>["message"] = async (
     message = parseMessage(msg);
   } catch {
     // Bogus-amogus message, kill the client, how dare him
+    onConnectionClose(ws);
     return ws.close();
   }
 

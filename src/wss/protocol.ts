@@ -14,6 +14,7 @@ const sendMessageSchema = z.object({
 
 const updateUserStatusSchema = z.object({
   type: z.literal("UPDATE_USER_STATUS"),
+  userId: z.string(),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
     isTyping: z.boolean().optional(),

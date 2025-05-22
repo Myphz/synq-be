@@ -65,6 +65,7 @@ export type Database = {
           chat_id: number | null;
           created_at: string;
           id: number;
+          is_read: boolean | null;
           text: string;
           user_id: string | null;
         };
@@ -72,6 +73,7 @@ export type Database = {
           chat_id?: number | null;
           created_at?: string;
           id?: number;
+          is_read?: boolean | null;
           text: string;
           user_id?: string | null;
         };
@@ -79,6 +81,7 @@ export type Database = {
           chat_id?: number | null;
           created_at?: string;
           id?: number;
+          is_read?: boolean | null;
           text?: string;
           user_id?: string | null;
         };
@@ -103,14 +106,20 @@ export type Database = {
         Row: {
           created_at: string;
           id: string;
+          name: string;
+          username: string;
         };
         Insert: {
           created_at?: string;
           id: string;
+          name: string;
+          username: string;
         };
         Update: {
           created_at?: string;
           id?: string;
+          name?: string;
+          username?: string;
         };
         Relationships: [];
       };
@@ -119,7 +128,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_initial_sync_data: {
+        Args: Record<PropertyKey, never> | { p_user_id: string };
+        Returns: Json;
+      };
+      is_user_in_chat: {
+        Args: { p_chat_id: number; p_uid: string };
+        Returns: boolean;
+      };
     };
     Enums: {
       [_ in never]: never;

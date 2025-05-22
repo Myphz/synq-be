@@ -1,14 +1,13 @@
-import type { WebSocket, WebSocketBehavior } from "uWebSockets.js";
+import type { WebSocketBehavior } from "uWebSockets.js";
 import { getSupabaseUser, getSupabaseUserClient } from "../middlewares/auth.js";
-import { getAllChatsForUser } from "../supabase/api.js";
+import { getInitialSyncData } from "../supabase/api.js";
 import { AuthData, AuthSocket } from "../types/utils.js";
 import { enhanceRequest } from "../utils/enhance.js";
 import { parseMessage } from "../utils/zod.js";
 import { processMessage } from "./chats.js";
+import { connectedClients } from "./clients.js";
 import { sendBroadcastMessage } from "./helpers.js";
-import type { Message } from "./protocol.js";
-
-export const connectedClients = new Map<string, WebSocket<AuthData>>();
+import type { ClientMessage, Message } from "./protocol.js";
 
 export const onUpgradeRequest: WebSocketBehavior<AuthData>["upgrade"] = async (
   res,
@@ -40,69 +39,97 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   ws
 ) => {
   const { user, supabaseClient } = ws.getUserData();
-  connectedClients.set(user.id, ws);
+  const { chats: chatsData } = await getInitialSyncData(supabaseClient);
+
+  connectedClients.set(user.id, {
+    chats: chatsData.map((chat) => ({
+      id: chat.chat_id.toString(),
+      isTyping: false
+    })),
+    ws
+  });
 
   // Subscribe ws to all of its chats
-  const userChats = await getAllChatsForUser(supabaseClient);
-
-  userChats.forEach((chatId) => {
-    ws.subscribe(chatId.toString());
+  chatsData.forEach((chat) => {
+    ws.subscribe(chat.chat_id.toString());
 
     // Notify everyone else of our new online status
     const message: Message = {
       type: "UPDATE_USER_STATUS",
       userId: user.id,
-      chatId: chatId,
+      chatId: chat.chat_id,
       data: {
         isOnline: true
       }
     };
 
-    sendBroadcastMessage({ ws, chatId, message });
+    sendBroadcastMessage({ ws, chatId: chat.chat_id, message });
   });
+
+  // Send initial data
+  const initialSyncData: Message = {
+    type: "INITIAL_SYNC",
+    chats: chatsData.map((chat) => ({
+      chatId: chat.chat_id,
+      unreadMessagesCount: chat.unread_messages_count,
+      lastMessage: chat.last_message
+        ? {
+            id: chat.last_message.id,
+            senderId: chat.last_message.sender_id,
+            content: chat.last_message.content,
+            timestamp: chat.last_message.timestamp,
+            isRead: chat.last_message.is_read
+          }
+        : null,
+      members: chat.members.map((member) => ({
+        ...member,
+        isTyping:
+          connectedClients
+            .get(member.id)
+            ?.chats.find(
+              (memberChat) => memberChat.id === chat.chat_id.toString()
+            )?.isTyping || false
+      }))
+    }))
+  };
+
+  ws.send(JSON.stringify(initialSyncData));
 };
 
-const onConnectionClose = (ws: AuthSocket) => {
+export const onConnectionClose = (ws: AuthSocket) => {
   const { user } = ws.getUserData();
+
+  const userData = connectedClients.get(user.id);
+  if (!userData)
+    throw new Error("onConnectionClose: can't get chats for disconnected user");
+
   connectedClients.delete(user.id);
 
-  // @ts-expect-error its ok
-  if (ws.isClosed) return;
-
-  const chats = ws.getTopics();
-  chats.forEach((chatId) => {
+  userData.chats.forEach((chat) => {
     // Notify everyone else of our new offline status
     const message: Message = {
       type: "UPDATE_USER_STATUS",
       userId: user.id,
-      chatId,
+      chatId: chat.id,
       data: {
         isOnline: false
       }
     };
 
-    sendBroadcastMessage({ chatId, message });
+    sendBroadcastMessage({ chatId: chat.id, message });
   });
 };
-
-export const onSubscriptionChange: WebSocketBehavior<AuthData>["subscription"] =
-  (ws, _, newCount) => {
-    if (newCount === 0) {
-      onConnectionClose(ws);
-    }
-  };
 
 export const onMessage: WebSocketBehavior<AuthData>["message"] = async (
   ws,
   msg
 ) => {
-  let message: Message;
+  let message: ClientMessage;
 
   try {
     message = parseMessage(msg);
   } catch {
     // Bogus-amogus message, kill the client, how dare him
-    onConnectionClose(ws);
     return ws.close();
   }
 

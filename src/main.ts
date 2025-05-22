@@ -1,10 +1,10 @@
 import { app } from "./app.js";
 import {
+  onConnectionClose,
   onMessage,
   onNewConnection,
-  onSubscriptionChange,
   onUpgradeRequest
-} from "./wss/events.js";
+} from "./wss/handlers.js";
 
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 3000;
 
@@ -12,9 +12,7 @@ app.ws("/", {
   upgrade: onUpgradeRequest,
   open: onNewConnection,
   message: onMessage,
-  subscription: onSubscriptionChange,
-  // @ts-expect-error its ok
-  close: (ws) => (ws.isClosed = true)
+  close: onConnectionClose
 });
 
 app.listen(PORT, () => {

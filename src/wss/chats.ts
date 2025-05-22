@@ -1,11 +1,11 @@
-import { app } from "../app.js";
 import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./events.js";
+import { sendBroadcastMessage } from "./helpers.js";
 import { Message } from "./messages.js";
 
 export const processMessage = async (ws: AuthSocket, message: Message) => {
-  const { chatId } = message;
+  const chatId = Number(message.chatId);
   const { user, supabaseClient } = ws.getUserData();
   // Client is trying to send a message to a new chat
   if (!ws.getTopics().includes(chatId.toString())) {
@@ -36,5 +36,5 @@ export const processMessage = async (ws: AuthSocket, message: Message) => {
   }
 
   // Broadcast message to everyone
-  app.publish(chatId.toString(), JSON.stringify(message));
+  sendBroadcastMessage({ chatId, message });
 };

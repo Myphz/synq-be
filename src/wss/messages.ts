@@ -3,7 +3,7 @@ import { z } from "zod";
 // This is a list of messages that the client OR the server may send.
 const sendMessageSchema = z.object({
   type: z.literal("SEND_MESSAGE"),
-  chatId: z.number(),
+  chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
     content: z.string()
   })
@@ -12,17 +12,18 @@ const sendMessageSchema = z.object({
 // Test message
 // {"type": "SEND_MESSAGE", "chatId": 1, "data": { "content": "mario" } }
 
-const typingUpdateSchema = z.object({
-  type: z.literal("UPDATE_TYPING"),
-  chatId: z.number(),
+const updateUserStatusSchema = z.object({
+  type: z.literal("UPDATE_USER_STATUS"),
+  chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
-    isTyping: z.boolean()
+    isTyping: z.boolean().optional(),
+    isOnline: z.boolean().optional()
   })
 });
 
 const readMessageSchema = z.object({
   type: z.literal("READ_MESSAGE"),
-  chatId: z.number(),
+  chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
     messageId: z.string()
   })
@@ -30,7 +31,7 @@ const readMessageSchema = z.object({
 
 export const messageSchema = z.discriminatedUnion("type", [
   sendMessageSchema,
-  typingUpdateSchema,
+  updateUserStatusSchema,
   readMessageSchema
 ]);
 

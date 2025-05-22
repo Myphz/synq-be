@@ -5,6 +5,7 @@ import { AuthData } from "../types/utils.js";
 import { enhanceRequest } from "../utils/enhance.js";
 import { parseMessage } from "../utils/zod.js";
 import { processMessage } from "./chats.js";
+import { sendBroadcastMessage } from "./helpers.js";
 import type { Message } from "./messages.js";
 
 export const connectedClients = new Map<string, WebSocket<AuthData>>();
@@ -44,16 +45,39 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   // Subscribe ws to all of its chats
   const userChats = await getAllChatsForUser(supabaseClient);
 
-  userChats.forEach((chat) => {
-    ws.subscribe(chat.toString());
+  userChats.forEach((chatId) => {
+    ws.subscribe(chatId.toString());
+
+    // Notify everyone else of our new online status
+    const message: Message = {
+      type: "UPDATE_USER_STATUS",
+      chatId: chatId,
+      data: {
+        isOnline: true
+      }
+    };
+
+    sendBroadcastMessage({ ws, chatId, message });
   });
 };
 
-export const onConnectionClose: WebSocketBehavior<AuthData>["close"] = async (
-  ws
-) => {
+export const onConnectionClose: WebSocketBehavior<AuthData>["close"] = (ws) => {
   const { user } = ws.getUserData();
   connectedClients.delete(user.id);
+
+  const chats = ws.getTopics();
+  chats.forEach((chatId) => {
+    // Notify everyone else of our new offline status
+    const message: Message = {
+      type: "UPDATE_USER_STATUS",
+      chatId,
+      data: {
+        isOnline: false
+      }
+    };
+
+    sendBroadcastMessage({ ws, chatId, message });
+  });
 };
 
 export const onMessage: WebSocketBehavior<AuthData>["message"] = async (

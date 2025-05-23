@@ -23,7 +23,7 @@ const readMessageSchema = z.object({
   type: z.literal("READ_MESSAGE"),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
-    messageId: z.string()
+    messageId: z.number()
   })
 });
 

@@ -40,6 +40,18 @@ export const processMessage = async (
       break;
     }
 
+    case "READ_MESSAGE": {
+      const { messageId } = message.data;
+
+      supabaseClient
+        .from("messages")
+        .update({ is_read: true })
+        .eq("id", messageId)
+        .then();
+
+      break;
+    }
+
     case "UPDATE_USER_TYPING": {
       // Update isTyping status for connected client
       const client = getConnectedClient(user.id);
@@ -50,6 +62,8 @@ export const processMessage = async (
           return { ...chat, isTyping: message.data.isTyping! };
         })
       });
+
+      break;
     }
   }
 

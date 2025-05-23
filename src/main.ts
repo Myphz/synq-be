@@ -4,7 +4,7 @@ import {
   onMessage,
   onNewConnection,
   onUpgradeRequest
-} from "./wss/handlers.js";
+} from "./protocol/handlers.js";
 
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 3000;
 

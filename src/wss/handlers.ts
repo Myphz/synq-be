@@ -4,10 +4,10 @@ import { getInitialSyncData } from "../supabase/api.js";
 import { AuthData, AuthSocket } from "../types/utils.js";
 import { enhanceRequest } from "../utils/enhance.js";
 import { parseMessage } from "../utils/zod.js";
-import { processMessage } from "./chats.js";
 import { connectedClients } from "./clients.js";
 import { sendBroadcastMessage } from "./helpers.js";
-import type { ClientMessage, Message } from "./protocol.js";
+import { processMessage } from "./process-message.js";
+import type { ClientMessage, ServerMessage } from "./protocol.js";
 
 export const onUpgradeRequest: WebSocketBehavior<AuthData>["upgrade"] = async (
   res,
@@ -54,7 +54,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
     ws.subscribe(chat.chat_id.toString());
 
     // Notify everyone else of our new online status
-    const message: Message = {
+    const message: ServerMessage = {
       type: "UPDATE_USER_STATUS",
       userId: user.id,
       chatId: chat.chat_id,
@@ -67,7 +67,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   });
 
   // Send initial data
-  const initialSyncData: Message = {
+  const initialSyncData: ServerMessage = {
     type: "INITIAL_SYNC",
     chats: chatsData.map((chat) => ({
       chatId: chat.chat_id,
@@ -82,7 +82,11 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
           }
         : null,
       members: chat.members.map((member) => ({
-        ...member,
+        id: member.id,
+        name: member.name,
+        username: member.username,
+        lastSeen: member.last_seen,
+        isOnline: !!connectedClients.get(member.id),
         isTyping:
           connectedClients
             .get(member.id)
@@ -97,27 +101,36 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
 };
 
 export const onConnectionClose = (ws: AuthSocket) => {
-  const { user } = ws.getUserData();
+  const { user, supabaseClient } = ws.getUserData();
 
   const userData = connectedClients.get(user.id);
   if (!userData)
     throw new Error("onConnectionClose: can't get chats for disconnected user");
 
   connectedClients.delete(user.id);
+  const now = new Date().toISOString();
 
   userData.chats.forEach((chat) => {
     // Notify everyone else of our new offline status
-    const message: Message = {
+    const message: ServerMessage = {
       type: "UPDATE_USER_STATUS",
       userId: user.id,
       chatId: chat.id,
       data: {
-        isOnline: false
+        isOnline: false,
+        lastSeen: now
       }
     };
 
     sendBroadcastMessage({ chatId: chat.id, message });
   });
+
+  // Update user's last_seen timestamp value
+  supabaseClient
+    .from("profiles")
+    .update({ last_seen: now })
+    .eq("id", user.id)
+    .then();
 };
 
 export const onMessage: WebSocketBehavior<AuthData>["message"] = async (

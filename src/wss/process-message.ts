@@ -2,7 +2,7 @@ import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
 import { getConnectedClient, sendBroadcastMessage } from "./helpers.js";
-import { ClientMessage } from "./protocol.js";
+import { ClientMessage, serverMessageSchema } from "./protocol.js";
 
 export const processMessage = async (
   ws: AuthSocket,
@@ -40,9 +40,7 @@ export const processMessage = async (
       break;
     }
 
-    case "UPDATE_USER_STATUS": {
-      if (message.data.isTyping === undefined) return;
-
+    case "UPDATE_USER_TYPING": {
       // Update isTyping status for connected client
       const client = getConnectedClient(user.id);
       connectedClients.set(user.id, {
@@ -55,6 +53,9 @@ export const processMessage = async (
     }
   }
 
-  // Broadcast message to everyone
-  sendBroadcastMessage({ chatId, message });
+  // Broadcast message to everyone if it's a server-allowed message
+  const isServerMessage = serverMessageSchema.safeParse(message);
+  if (isServerMessage.success) {
+    sendBroadcastMessage({ chatId, message: isServerMessage.data });
+  }
 };

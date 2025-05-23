@@ -1,11 +1,11 @@
 import { app } from "../app.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
-import { Message } from "./protocol.js";
+import { ServerMessage } from "./protocol.js";
 
 type SendBroadcastMessageParams = {
   ws?: AuthSocket;
-  message: Message;
+  message: ServerMessage;
   chatId: string | number;
 };
 

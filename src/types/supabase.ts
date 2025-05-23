@@ -106,18 +106,21 @@ export type Database = {
         Row: {
           created_at: string;
           id: string;
+          last_seen: string | null;
           name: string;
           username: string;
         };
         Insert: {
           created_at?: string;
           id: string;
+          last_seen?: string | null;
           name: string;
           username: string;
         };
         Update: {
           created_at?: string;
           id?: string;
+          last_seen?: string | null;
           name?: string;
           username?: string;
         };

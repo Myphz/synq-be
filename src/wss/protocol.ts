@@ -10,16 +10,12 @@ const sendMessageSchema = z.object({
   })
 });
 
-// Test message
-// {"type": "SEND_MESSAGE", "chatId": 1, "userId": "4a71bb88-8d37-4b33-9231-4233aed3e9ab", "data": { "content": "mario" } }
-
-const updateUserStatusSchema = z.object({
-  type: z.literal("UPDATE_USER_STATUS"),
+const updateUserTypingSchema = z.object({
+  type: z.literal("UPDATE_USER_TYPING"),
   userId: z.string(),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
-    isTyping: z.boolean().optional(),
-    isOnline: z.boolean().optional()
+    isTyping: z.boolean().optional()
   })
 });
 
@@ -30,6 +26,12 @@ const readMessageSchema = z.object({
     messageId: z.string()
   })
 });
+
+const sharedMessagesSchema = z.discriminatedUnion("type", [
+  sendMessageSchema,
+  updateUserTypingSchema,
+  readMessageSchema
+]);
 
 // ** SERVER ONLY MESSAGES ** (Only the server sends these!)
 const initialSyncSchema = z.object({
@@ -45,20 +47,46 @@ const initialSyncSchema = z.object({
           timestamp: z.string(),
           isRead: z.boolean()
         })
-        .or(z.null()),
+        .nullable(),
       unreadMessagesCount: z.number(),
       members: z.array(
         z.object({
           id: z.string(),
           name: z.string(),
           username: z.string(),
-          isTyping: z.boolean()
+          isOnline: z.boolean(),
+          isTyping: z.boolean(),
+          lastSeen: z.string().nullable()
           // TODO: Add pfp
         })
       )
     })
   )
 });
+
+const updateUserStatusSchema = z.object({
+  type: z.literal("UPDATE_USER_STATUS"),
+  userId: z.string(),
+  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  data: z.object({
+    isOnline: z.boolean().optional(),
+    lastSeen: z.string().optional()
+  })
+});
+
+export const serverMessageSchema = sharedMessagesSchema.or(
+  z.discriminatedUnion("type", [initialSyncSchema, updateUserStatusSchema])
+);
+
+// ** CLIENT ONLY MESSAGES ** (Only the client sends these!)
+const requestMessagesSchema = z.object({
+  type: z.literal("REQUEST_MESSAGES"),
+  chatId: z.string().regex(/^\d+$/).or(z.number())
+});
+
+export const clientMessageSchema = sharedMessagesSchema.or(
+  z.discriminatedUnion("type", [requestMessagesSchema])
+);
 
 export const messageSchema = z.discriminatedUnion("type", [
   sendMessageSchema,
@@ -67,6 +95,8 @@ export const messageSchema = z.discriminatedUnion("type", [
   initialSyncSchema
 ]);
 
-export type Message = z.infer<typeof messageSchema>;
+export type ClientMessage = z.infer<typeof clientMessageSchema>;
+export type ServerMessage = z.infer<typeof serverMessageSchema>;
 
-export type ClientMessage = Exclude<Message, { type: "INITIAL_SYNC" }>;
+// Test message
+// {"type": "SEND_MESSAGE", "chatId": 1, "userId": "4a71bb88-8d37-4b33-9231-4233aed3e9ab", "data": { "content": "mario" } }

@@ -44,7 +44,7 @@ const initialSyncSchema = z.object({
       chatId: z.number(),
       lastMessage: z
         .object({
-          id: z.number(),
+          id: z.string().uuid(),
           senderId: z.string(),
           content: z.string(),
           timestamp: z.string(),

@@ -1,18 +1,10 @@
 import { z } from "zod";
 
 // ** SHARED MESSAGES ** (both client AND server may send these!)
-const sendMessageSchema = z.object({
-  type: z.literal("SEND_MESSAGE"),
-  chatId: z.string().regex(/^\d+$/).or(z.number()),
-  userId: z.string(),
-  data: z.object({
-    content: z.string()
-  })
-});
 
 const updateUserTypingSchema = z.object({
   type: z.literal("UPDATE_USER_TYPING"),
-  userId: z.string(),
+  userId: z.string().uuid(),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
     isTyping: z.boolean().optional()
@@ -23,17 +15,27 @@ const readMessageSchema = z.object({
   type: z.literal("READ_MESSAGE"),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
-    messageId: z.number()
+    messageId: z.string().uuid()
   })
 });
 
 const sharedMessagesSchema = z.discriminatedUnion("type", [
-  sendMessageSchema,
   updateUserTypingSchema,
   readMessageSchema
 ]);
 
 // ** SERVER ONLY MESSAGES ** (Only the server sends these!)
+const receiveMessageSchema = z.object({
+  type: z.literal("RECEIVE_MESSAGE"),
+  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  userId: z.string().uuid(),
+  data: z.object({
+    id: z.string().uuid(),
+    content: z.string(),
+    sentAt: z.string()
+  })
+});
+
 const initialSyncSchema = z.object({
   type: z.literal("INITIAL_SYNC"),
   chats: z.array(
@@ -67,7 +69,7 @@ const initialSyncSchema = z.object({
 
 const updateUserStatusSchema = z.object({
   type: z.literal("UPDATE_USER_STATUS"),
-  userId: z.string(),
+  userId: z.string().uuid(),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
     isOnline: z.boolean().optional(),
@@ -81,7 +83,7 @@ const getMessagesSchema = z.object({
   data: z.object({
     messages: z.array(
       z.object({
-        id: z.number(),
+        id: z.string().uuid(),
         sentAt: z.string(),
         senderId: z.string(),
         content: z.string(),
@@ -95,22 +97,28 @@ export const serverMessageSchema = sharedMessagesSchema.or(
   z.discriminatedUnion("type", [
     initialSyncSchema,
     updateUserStatusSchema,
-    getMessagesSchema
+    getMessagesSchema,
+    receiveMessageSchema
   ])
 );
 
 // ** CLIENT ONLY MESSAGES ** (Only the client sends these!)
+const sendMessageSchema = z.object({
+  type: z.literal("SEND_MESSAGE"),
+  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  data: z.object({
+    content: z.string()
+  })
+});
+
 const requestMessagesSchema = z.object({
   type: z.literal("REQUEST_MESSAGES"),
   chatId: z.string().regex(/^\d+$/).or(z.number())
 });
 
 export const clientMessageSchema = sharedMessagesSchema.or(
-  z.discriminatedUnion("type", [requestMessagesSchema])
+  z.discriminatedUnion("type", [sendMessageSchema, requestMessagesSchema])
 );
 
 export type ClientMessage = z.infer<typeof clientMessageSchema>;
 export type ServerMessage = z.infer<typeof serverMessageSchema>;
-
-// Test message
-// {"type": "SEND_MESSAGE", "chatId": 1, "userId": "4a71bb88-8d37-4b33-9231-4233aed3e9ab", "data": { "content": "mario" } }

@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
@@ -30,15 +31,27 @@ export const processMessage = async (
 
   switch (message.type) {
     case "SEND_MESSAGE": {
-      // Client lied about his user id. Kill him.
-      if (message.userId !== user.id) return ws.close();
-
       const { content } = message.data;
+      const now = new Date().toISOString();
+      const id = uuidv4();
 
       supabaseClient
         .from("messages")
-        .insert({ chat_id: chatId, text: content })
+        .insert({ chat_id: chatId, text: content, id, created_at: now })
         .then();
+
+      const socketMessage: ServerMessage = {
+        type: "RECEIVE_MESSAGE",
+        userId: user.id,
+        chatId,
+        data: {
+          id,
+          content,
+          sentAt: now
+        }
+      };
+
+      sendBroadcastMessage({ chatId, message: socketMessage });
 
       // TODO: Send notification to offline members
       break;

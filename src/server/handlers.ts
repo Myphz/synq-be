@@ -105,7 +105,9 @@ export const onConnectionClose = (ws: AuthSocket) => {
 
   const userData = connectedClients.get(user.id);
   if (!userData)
-    throw new Error("onConnectionClose: can't get chats for disconnected user");
+    return console.log(
+      "WARN: onConnectionClose: can't get chats for disconnected user"
+    );
 
   connectedClients.delete(user.id);
   const now = new Date().toISOString();

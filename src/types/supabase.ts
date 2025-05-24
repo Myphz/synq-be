@@ -62,28 +62,28 @@ export type Database = {
       };
       messages: {
         Row: {
-          chat_id: number | null;
+          chat_id: number;
           created_at: string;
           id: number;
           is_read: boolean | null;
           text: string;
-          user_id: string | null;
+          user_id: string;
         };
         Insert: {
-          chat_id?: number | null;
+          chat_id: number;
           created_at?: string;
           id?: number;
           is_read?: boolean | null;
           text: string;
-          user_id?: string | null;
+          user_id?: string;
         };
         Update: {
-          chat_id?: number | null;
+          chat_id?: number;
           created_at?: string;
           id?: number;
           is_read?: boolean | null;
           text?: string;
-          user_id?: string | null;
+          user_id?: string;
         };
         Relationships: [
           {

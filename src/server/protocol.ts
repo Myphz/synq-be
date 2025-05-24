@@ -74,8 +74,28 @@ const updateUserStatusSchema = z.object({
   })
 });
 
+const getMessagesSchema = z.object({
+  type: z.literal("GET_MESSAGES"),
+  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  data: z.object({
+    messages: z.array(
+      z.object({
+        id: z.number(),
+        sentAt: z.string(),
+        senderId: z.string(),
+        content: z.string(),
+        isRead: z.boolean()
+      })
+    )
+  })
+});
+
 export const serverMessageSchema = sharedMessagesSchema.or(
-  z.discriminatedUnion("type", [initialSyncSchema, updateUserStatusSchema])
+  z.discriminatedUnion("type", [
+    initialSyncSchema,
+    updateUserStatusSchema,
+    getMessagesSchema
+  ])
 );
 
 // ** CLIENT ONLY MESSAGES ** (Only the client sends these!)

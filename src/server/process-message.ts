@@ -2,7 +2,11 @@ import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
 import { getConnectedClient, sendBroadcastMessage } from "./helpers.js";
-import { ClientMessage, serverMessageSchema } from "./protocol.js";
+import {
+  ClientMessage,
+  ServerMessage,
+  serverMessageSchema
+} from "./protocol.js";
 
 export const processMessage = async (
   ws: AuthSocket,
@@ -64,6 +68,33 @@ export const processMessage = async (
       });
 
       break;
+    }
+
+    case "REQUEST_MESSAGES": {
+      // Fetch the latest 20 messages and send them to the client
+      const { data: messages } = await supabaseClient
+        .from("messages")
+        .select("*")
+        .eq("chat_id", chatId)
+        .order("created_at", { ascending: false })
+        .limit(20)
+        .throwOnError();
+
+      const message: ServerMessage = {
+        type: "GET_MESSAGES",
+        chatId,
+        data: {
+          messages: messages.map((msg) => ({
+            id: msg.id,
+            content: msg.text,
+            senderId: msg.user_id,
+            sentAt: msg.created_at,
+            isRead: msg.is_read || false
+          }))
+        }
+      };
+
+      ws.send(JSON.stringify(message));
     }
   }
 

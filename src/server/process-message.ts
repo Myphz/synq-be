@@ -13,6 +13,7 @@ export const processMessage = async (
   ws: AuthSocket,
   message: ClientMessage
 ) => {
+  console.log("Received message:", message);
   const chatId = Number(message.chatId);
   const { user, supabaseClient } = ws.getUserData();
   // Client is trying to send a message to a new chat

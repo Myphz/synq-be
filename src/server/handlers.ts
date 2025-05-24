@@ -146,6 +146,7 @@ export const onMessage: WebSocketBehavior<AuthData>["message"] = async (
     message = parseMessage(msg);
   } catch {
     // Bogus-amogus message, kill the client, how dare him
+    console.log("Received bogus amogus:", new TextDecoder().decode(msg).trim());
     return ws.close();
   }
 

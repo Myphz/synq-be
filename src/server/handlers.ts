@@ -70,6 +70,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   const initialSyncData: ServerMessage = {
     type: "INITIAL_SYNC",
     chats: chatsData.map((chat) => ({
+      name: chat.chat_name || chat.members?.[0]?.name || "UNKNOWN_NAME",
       chatId: chat.chat_id,
       unreadMessagesCount: chat.unread_messages_count,
       lastMessage: chat.last_message

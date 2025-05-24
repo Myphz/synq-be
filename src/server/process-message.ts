@@ -2,7 +2,7 @@ import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
 import { getConnectedClient, sendBroadcastMessage } from "./helpers.js";
-import { ClientMessage, serverMessageSchema } from "./schemas.js";
+import { ClientMessage, serverMessageSchema } from "./protocol.js";
 
 export const processMessage = async (
   ws: AuthSocket,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { clientMessageSchema } from "../protocol/schemas.js";
+import { clientMessageSchema } from "../server/protocol.js";
 
 export const parseJsonString = z.string().transform((str, ctx) => {
   try {

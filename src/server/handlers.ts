@@ -7,7 +7,7 @@ import { parseMessage } from "../utils/zod.js";
 import { connectedClients } from "./clients.js";
 import { sendBroadcastMessage } from "./helpers.js";
 import { processMessage } from "./process-message.js";
-import type { ClientMessage, ServerMessage } from "./schemas.js";
+import type { ClientMessage, ServerMessage } from "./protocol.js";
 
 export const onUpgradeRequest: WebSocketBehavior<AuthData>["upgrade"] = async (
   res,

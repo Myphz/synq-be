@@ -3,7 +3,7 @@ import { SUPABASE_JWT_SECRET, SUPABASE_URL } from "../constants.js";
 
 export const generateTestJWT = (email: string, id: string) => {
   const now = Math.floor(Date.now() / 1000) - 20;
-  const exp = now + 99_999;
+  const exp = now + 999_999_999;
 
   const payload = {
     aud: "authenticated",

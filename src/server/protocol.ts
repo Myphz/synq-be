@@ -88,13 +88,6 @@ export const clientMessageSchema = sharedMessagesSchema.or(
   z.discriminatedUnion("type", [requestMessagesSchema])
 );
 
-export const messageSchema = z.discriminatedUnion("type", [
-  sendMessageSchema,
-  updateUserStatusSchema,
-  readMessageSchema,
-  initialSyncSchema
-]);
-
 export type ClientMessage = z.infer<typeof clientMessageSchema>;
 export type ServerMessage = z.infer<typeof serverMessageSchema>;
 

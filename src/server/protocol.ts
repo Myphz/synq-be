@@ -40,7 +40,7 @@ const initialSyncSchema = z.object({
   type: z.literal("INITIAL_SYNC"),
   chats: z.array(
     z.object({
-      name: z.string(),
+      name: z.string().nullable(),
       chatId: z.number(),
       lastMessage: z
         .object({

@@ -32,5 +32,5 @@ export const generateTestJWT = (email: string, id: string) => {
 };
 
 console.log(
-  generateTestJWT("mario@mario.com", "4a71bb88-8d37-4b33-9231-4233aed3e9ab")
+  generateTestJWT("stefano@stefano.ok", "6516acbe-39ec-4e47-bf42-7b3b939b2067")
 );

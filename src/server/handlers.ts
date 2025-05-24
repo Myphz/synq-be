@@ -39,14 +39,16 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   ws
 ) => {
   const { user, supabaseClient } = ws.getUserData();
+  console.log("New connection!", user.id);
+
   const { chats: chatsData } = await getInitialSyncData(supabaseClient);
 
   connectedClients.set(user.id, {
+    ws,
     chats: chatsData.map((chat) => ({
       id: chat.chat_id.toString(),
       isTyping: false
-    })),
-    ws
+    }))
   });
 
   // Subscribe ws to all of its chats
@@ -70,7 +72,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   const initialSyncData: ServerMessage = {
     type: "INITIAL_SYNC",
     chats: chatsData.map((chat) => ({
-      name: chat.chat_name || chat.members?.[0]?.name || "UNKNOWN_NAME",
+      name: chat.chat_name,
       chatId: chat.chat_id,
       unreadMessagesCount: chat.unread_messages_count,
       lastMessage: chat.last_message

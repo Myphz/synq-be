@@ -27,7 +27,7 @@ export const getInitialSyncData = async (
       chat_name: string | null;
       chat_created_at: string;
       last_message: {
-        id: number;
+        id: string;
         sender_id: string;
         content: string;
         timestamp: string;

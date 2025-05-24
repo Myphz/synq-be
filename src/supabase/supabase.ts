@@ -12,14 +12,14 @@ export const getUserForJWT = async (jwt: string) => {
 };
 
 export const createClientAs = (jwt: string) => {
-  let header = jwt;
+  let token = jwt;
 
-  if (!header.startsWith("Bearer")) {
-    header = `Bearer ${header}`;
+  if (!token.startsWith("Bearer")) {
+    token = `Bearer ${token}`;
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: { headers: { Authorization: header } }
+    global: { headers: { Authorization: token } }
   });
 };
 

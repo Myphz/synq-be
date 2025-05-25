@@ -20,6 +20,13 @@ export const onUpgradeRequest: WebSocketBehavior<AuthData>["upgrade"] = async (
     const user = await getSupabaseUser(res);
     const supabaseClient = await getSupabaseUserClient(res);
 
+    if (connectedClients.get(user.id)) {
+      console.log(
+        "WARN: Same user is connecting twice, dropped old connection"
+      );
+      connectedClients.get(user.id)!.ws.close();
+    }
+
     res.cork(() => {
       res.upgrade(
         { user, supabaseClient },

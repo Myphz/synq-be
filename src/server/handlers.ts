@@ -46,8 +46,6 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   ws
 ) => {
   const { user, supabaseClient } = ws.getUserData();
-  console.log("New connection!", user.id);
-
   const { chats: chatsData } = await getInitialSyncData(supabaseClient);
 
   connectedClients.set(user.id, {

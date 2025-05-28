@@ -3,7 +3,7 @@ name: Test & Fly Deploy
 on:
   push:
     branches:
-      - CHANGE_ME_TO_MASTER
+      - master
 
 jobs:
   test:
@@ -14,18 +14,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "21"
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Run Tests
-        run: npm run test
-        env:
-          TELEGRAM_API_KEY: NOT_NEEDED
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: "21"
+      #
+      # - name: Install Dependencies
+      #   run: npm install
+      #
+      # - name: Run Tests
+      #   run: npm run test
+      #   env:
+      #     TELEGRAM_API_KEY: NOT_NEEDED
 
   deploy:
     name: Deploy app

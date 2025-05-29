@@ -84,13 +84,13 @@ export const processMessage = async (
     }
 
     case "REQUEST_MESSAGES": {
-      // Fetch the latest 20 messages and send them to the client
+      // Fetch the latest messages and send them to the client
       const { data: messages } = await supabaseClient
         .from("messages")
         .select("*")
         .eq("chat_id", chatId)
         .order("created_at", { ascending: false })
-        .limit(20)
+        .limit(100)
         .throwOnError();
 
       const message: ServerMessage = {

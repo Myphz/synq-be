@@ -89,7 +89,7 @@ export const processMessage = async (
         .from("messages")
         .select("*")
         .eq("chat_id", chatId)
-        .order("created_at")
+        .order("created_at", { ascending: false })
         .limit(20)
         .throwOnError();
 

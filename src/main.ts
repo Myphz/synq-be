@@ -12,7 +12,8 @@ app.ws("/", {
   upgrade: onUpgradeRequest,
   open: onNewConnection,
   message: onMessage,
-  close: onConnectionClose
+  close: onConnectionClose,
+  idleTimeout: 4
 });
 
 app.listen(PORT, () => {

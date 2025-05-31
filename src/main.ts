@@ -13,7 +13,7 @@ app.ws("/", {
   open: onNewConnection,
   message: onMessage,
   close: onConnectionClose,
-  idleTimeout: 4
+  idleTimeout: 8
 });
 
 app.listen(PORT, () => {

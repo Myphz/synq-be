@@ -85,7 +85,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
             id: chat.last_message.id,
             senderId: chat.last_message.sender_id,
             content: chat.last_message.content,
-            timestamp: chat.last_message.timestamp,
+            sentAt: chat.last_message.timestamp,
             isRead: chat.last_message.is_read
           }
         : null,

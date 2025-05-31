@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+const messageSchema = z.object({
+  id: z.string().uuid(),
+  sentAt: z.string(),
+  senderId: z.string(),
+  content: z.string(),
+  isRead: z.boolean()
+});
+
 // ** SHARED MESSAGES ** (both client AND server may send these!)
 
 const updateUserTypingSchema = z.object({
@@ -42,15 +50,7 @@ const initialSyncSchema = z.object({
     z.object({
       name: z.string().nullable(),
       chatId: z.number(),
-      lastMessage: z
-        .object({
-          id: z.string().uuid(),
-          senderId: z.string(),
-          content: z.string(),
-          timestamp: z.string(),
-          isRead: z.boolean()
-        })
-        .nullable(),
+      lastMessage: messageSchema.nullable(),
       unreadMessagesCount: z.number(),
       members: z.array(
         z.object({
@@ -81,15 +81,7 @@ const getMessagesSchema = z.object({
   type: z.literal("GET_MESSAGES"),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
-    messages: z.array(
-      z.object({
-        id: z.string().uuid(),
-        sentAt: z.string(),
-        senderId: z.string(),
-        content: z.string(),
-        isRead: z.boolean()
-      })
-    )
+    messages: z.array(messageSchema)
   })
 });
 

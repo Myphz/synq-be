@@ -9,16 +9,6 @@ const messageSchema = z.object({
 });
 
 // ** SHARED MESSAGES ** (both client AND server may send these!)
-
-const updateUserTypingSchema = z.object({
-  type: z.literal("UPDATE_USER_TYPING"),
-  userId: z.string().uuid(),
-  chatId: z.string().regex(/^\d+$/).or(z.number()),
-  data: z.object({
-    isTyping: z.boolean().optional()
-  })
-});
-
 const readMessageSchema = z.object({
   type: z.literal("READ_MESSAGE"),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
@@ -27,10 +17,7 @@ const readMessageSchema = z.object({
   })
 });
 
-const sharedMessagesSchema = z.discriminatedUnion("type", [
-  updateUserTypingSchema,
-  readMessageSchema
-]);
+const sharedMessagesSchema = z.discriminatedUnion("type", [readMessageSchema]);
 
 // ** SERVER ONLY MESSAGES ** (Only the server sends these!)
 const receiveMessageSchema = z.object({
@@ -73,6 +60,7 @@ const updateUserStatusSchema = z.object({
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
     isOnline: z.boolean().optional(),
+    isTyping: z.boolean().optional(),
     lastSeen: z.string().optional()
   })
 });
@@ -95,6 +83,16 @@ export const serverMessageSchema = sharedMessagesSchema.or(
 );
 
 // ** CLIENT ONLY MESSAGES ** (Only the client sends these!)
+
+const updateUserTypingSchema = z.object({
+  type: z.literal("UPDATE_USER_TYPING"),
+  userId: z.string().uuid(),
+  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  data: z.object({
+    isTyping: z.boolean()
+  })
+});
+
 const sendMessageSchema = z.object({
   type: z.literal("SEND_MESSAGE"),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
@@ -109,7 +107,11 @@ const requestMessagesSchema = z.object({
 });
 
 export const clientMessageSchema = sharedMessagesSchema.or(
-  z.discriminatedUnion("type", [sendMessageSchema, requestMessagesSchema])
+  z.discriminatedUnion("type", [
+    updateUserTypingSchema,
+    sendMessageSchema,
+    requestMessagesSchema
+  ])
 );
 
 export type ClientMessage = z.infer<typeof clientMessageSchema>;

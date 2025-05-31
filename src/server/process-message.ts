@@ -40,7 +40,7 @@ export const processMessage = async (
         .insert({ chat_id: chatId, text: content, id, created_at: now })
         .then();
 
-      const socketMessage: ServerMessage = {
+      const socketMessage = {
         type: "RECEIVE_MESSAGE",
         userId: user.id,
         chatId,
@@ -49,7 +49,7 @@ export const processMessage = async (
           content,
           sentAt: now
         }
-      };
+      } satisfies ServerMessage;
 
       sendBroadcastMessage({ chatId, message: socketMessage });
 
@@ -71,14 +71,24 @@ export const processMessage = async (
 
     case "UPDATE_USER_TYPING": {
       // Update isTyping status for connected client
+      // && send UPDATE_USER_STATUS msg
       const client = getConnectedClient(user.id);
       connectedClients.set(user.id, {
         ...client,
         chats: client.chats.map((chat) => {
           if (Number(chat.id) !== chatId) return chat;
-          return { ...chat, isTyping: message.data.isTyping! };
+          return { ...chat, isTyping: message.data.isTyping };
         })
       });
+
+      const socketMessage = {
+        type: "UPDATE_USER_STATUS",
+        userId: user.id,
+        chatId,
+        data: message.data
+      } satisfies ServerMessage;
+
+      sendBroadcastMessage({ chatId, message: socketMessage });
 
       break;
     }
@@ -93,7 +103,7 @@ export const processMessage = async (
         .limit(100)
         .throwOnError();
 
-      const message: ServerMessage = {
+      const message = {
         type: "GET_MESSAGES",
         chatId,
         data: {
@@ -105,7 +115,7 @@ export const processMessage = async (
             isRead: msg.is_read || false
           }))
         }
-      };
+      } satisfies ServerMessage;
 
       ws.send(JSON.stringify(message));
     }

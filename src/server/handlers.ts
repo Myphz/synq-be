@@ -66,6 +66,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
       userId: user.id,
       chatId: chat.chat_id,
       data: {
+        isTyping: false,
         isOnline: true
       }
     };
@@ -127,6 +128,7 @@ export const onConnectionClose = (ws: AuthSocket) => {
       userId: user.id,
       chatId: chat.id,
       data: {
+        isTyping: false,
         isOnline: false,
         lastSeen: now
       }

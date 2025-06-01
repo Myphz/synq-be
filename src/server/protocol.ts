@@ -86,7 +86,6 @@ export const serverMessageSchema = sharedMessagesSchema.or(
 
 const updateUserTypingSchema = z.object({
   type: z.literal("UPDATE_USER_TYPING"),
-  userId: z.string().uuid(),
   chatId: z.string().regex(/^\d+$/).or(z.number()),
   data: z.object({
     isTyping: z.boolean()

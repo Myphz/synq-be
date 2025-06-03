@@ -6,22 +6,27 @@ type SendNotificationParams = {
 };
 
 export const sendNotification = async ({ userId }: SendNotificationParams) => {
-  const {
-    data: { fcm_token: token }
-  } = await supabaseAdmin
-    .from("profiles")
-    .select("fcm_token")
-    .eq("id", userId)
-    .single()
-    .throwOnError();
+  try {
+    const {
+      data: { fcm_token: token }
+    } = await supabaseAdmin
+      .from("profiles")
+      .select("fcm_token")
+      .eq("id", userId)
+      .single()
+      .throwOnError();
 
-  if (!token) return console.log("sendNotification(): no token");
+    if (!token) return console.log("sendNotification(): no token");
 
-  await getMessaging().send({
-    token,
-    notification: {
-      title: "Test!",
-      body: "sodjf"
-    }
-  });
+    const res = await getMessaging().send({
+      token,
+      notification: {
+        title: "Test!",
+        body: "sodjf"
+      }
+    });
+    console.log("Notification sent!", res);
+  } catch (err) {
+    console.log("Notification error", err);
+  }
 };

@@ -19,3 +19,7 @@ export const SUPABASE_SERVICE_ROLE_KEY = getEnvValue(
 
 export const TELEGRAM_API_KEY = getEnvValue("TELEGRAM_API_KEY");
 export const TELEGRAM_CHAT_ID = "644102713";
+
+export const FIREBASE_SERVICE_ACCOUNT = JSON.parse(
+  getEnvValue("FIREBASE_SERVICE_ACCOUNT")
+);

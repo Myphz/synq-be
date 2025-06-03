@@ -3,6 +3,7 @@ import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
 import { getConnectedClient, sendBroadcastMessage } from "./helpers.js";
+import { sendNotification } from "./notifications.js";
 import {
   ClientMessage,
   ServerMessage,
@@ -53,7 +54,13 @@ export const processMessage = async (
 
       sendBroadcastMessage({ chatId, message: socketMessage });
 
-      // TODO: Send notification to offline members
+      // Send notification to offline members
+      const members = await getChatMembers(supabaseClient, chatId);
+      const offlineMembers = members.filter(
+        (member) => !connectedClients.has(member)
+      );
+
+      offlineMembers.forEach((member) => sendNotification({ userId: member }));
       break;
     }
 

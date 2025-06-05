@@ -60,7 +60,9 @@ export const processMessage = async (
         (member) => !connectedClients.has(member)
       );
 
-      offlineMembers.forEach((member) => sendNotification({ userId: member }));
+      offlineMembers.forEach((member) =>
+        sendNotification({ userId: member, message: content })
+      );
       break;
     }
 

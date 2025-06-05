@@ -26,6 +26,9 @@ export const sendNotification = async ({
       title: name,
       body: message
       // TODO: Add image_url
+    },
+    android: {
+      priority: "high"
     }
   });
 };

@@ -3,22 +3,34 @@ import { supabaseAdmin } from "../supabase/admin.js";
 
 type SendNotificationParams = {
   userId: string;
+  senderId: string;
   message: string;
 };
 
 export const sendNotification = async ({
   userId,
+  senderId,
   message
 }: SendNotificationParams) => {
-  const { data } = await supabaseAdmin
+  const {
+    data: { fcm_token: token }
+  } = await supabaseAdmin
     .from("profiles")
-    .select("*")
+    .select("fcm_token")
     .eq("id", userId)
     .single()
     .throwOnError();
 
-  const { fcm_token: token, name } = data;
   if (!token) return;
+
+  const {
+    data: { name }
+  } = await supabaseAdmin
+    .from("profiles")
+    .select("name")
+    .eq("id", senderId)
+    .single()
+    .throwOnError();
 
   await getMessaging().send({
     token,

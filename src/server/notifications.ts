@@ -39,8 +39,19 @@ export const sendNotification = async ({
       body: message
       // TODO: Add image_url
     },
+    // Add default sound
     android: {
-      priority: "high"
+      priority: "high",
+      notification: {
+        sound: "default"
+      }
+    },
+    apns: {
+      payload: {
+        aps: {
+          sound: "default"
+        }
+      }
     }
   });
 };

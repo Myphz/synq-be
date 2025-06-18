@@ -32,26 +32,30 @@ export const sendNotification = async ({
     .single()
     .throwOnError();
 
-  await getMessaging().send({
-    token,
-    notification: {
-      title: name,
-      body: message
-      // TODO: Add image_url
-    },
-    // Add default sound
-    android: {
-      priority: "high",
+  try {
+    await getMessaging().send({
+      token,
       notification: {
-        sound: "default"
-      }
-    },
-    apns: {
-      payload: {
-        aps: {
+        title: name,
+        body: message
+        // TODO: Add image_url
+      },
+      // Add default sound
+      android: {
+        priority: "high",
+        notification: {
           sound: "default"
         }
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: "default"
+          }
+        }
       }
-    }
-  });
+    });
+  } catch (err) {
+    console.log(`NOTIFICATION: Failed for user ${userId}`, err);
+  }
 };

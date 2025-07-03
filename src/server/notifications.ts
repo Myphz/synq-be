@@ -5,12 +5,14 @@ type SendNotificationParams = {
   userId: string;
   senderId: string;
   message: string;
+  chatId: number;
 };
 
 export const sendNotification = async ({
   userId,
   senderId,
-  message
+  message,
+  chatId
 }: SendNotificationParams) => {
   const {
     data: { fcm_token: token }
@@ -39,6 +41,9 @@ export const sendNotification = async ({
         title: name,
         body: message
         // TODO: Add image_url
+      },
+      data: {
+        chatId: chatId.toString()
       },
       // Add default sound
       android: {

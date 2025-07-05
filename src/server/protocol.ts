@@ -46,8 +46,8 @@ const initialSyncSchema = z.object({
           username: z.string(),
           isOnline: z.boolean(),
           isTyping: z.boolean(),
-          lastSeen: z.string().nullable()
-          // TODO: Add pfp
+          lastSeen: z.string().nullable(),
+          avatarUrl: z.string().nullable()
         })
       )
     })

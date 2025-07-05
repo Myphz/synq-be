@@ -26,10 +26,10 @@ export const sendNotification = async ({
   if (!token) return;
 
   const {
-    data: { name }
+    data: { name, avatar_url: avatar }
   } = await supabaseAdmin
     .from("profiles")
-    .select("name")
+    .select("name, avatar_url")
     .eq("id", senderId)
     .single()
     .throwOnError();
@@ -39,8 +39,8 @@ export const sendNotification = async ({
       token,
       notification: {
         title: name,
-        body: message
-        // TODO: Add image_url
+        body: message,
+        ...(avatar && { imageUrl: avatar })
       },
       data: {
         chatId: chatId.toString()

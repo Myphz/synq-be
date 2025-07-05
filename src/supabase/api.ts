@@ -39,6 +39,7 @@ export const getInitialSyncData = async (
         name: string;
         username: string;
         last_seen: string | null;
+        avatar_url: string | null;
       }>;
     }>;
   };

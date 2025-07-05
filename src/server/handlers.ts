@@ -95,6 +95,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
         name: member.name,
         username: member.username,
         lastSeen: member.last_seen,
+        avatarUrl: member.avatar_url,
         isOnline: !!connectedClients.get(member.id),
         isTyping:
           connectedClients

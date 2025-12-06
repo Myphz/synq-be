@@ -5,7 +5,7 @@ export const connectedClients = new Map<
   {
     ws: AuthSocket;
     chats: {
-      id: string;
+      id: number;
       isTyping: boolean;
     }[];
   }

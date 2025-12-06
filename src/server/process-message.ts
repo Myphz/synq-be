@@ -14,7 +14,7 @@ export const processMessage = async (
   ws: AuthSocket,
   message: ClientMessage
 ) => {
-  const chatId = Number(message.chatId);
+  const chatId = message.chatId;
   const { user, supabaseClient } = ws.getUserData();
   // Client is trying to send a message to a new chat
   if (!ws.getTopics().includes(chatId.toString())) {

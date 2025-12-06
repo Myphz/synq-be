@@ -3,12 +3,12 @@ import { Database } from "../types/supabase.js";
 
 export const getChatMembers = async (
   supabaseClient: SupabaseClient<Database>,
-  chatId: number
+  chatId: number | string
 ) => {
   const { data: userIds } = await supabaseClient
     .from("chats_members")
     .select("user_id")
-    .eq("chat_id", chatId)
+    .eq("chat_id", Number(chatId))
     .throwOnError();
 
   return userIds.map((id) => id.user_id);

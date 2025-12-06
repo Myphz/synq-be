@@ -51,7 +51,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
   connectedClients.set(user.id, {
     ws,
     chats: chatsData.map((chat) => ({
-      id: chat.chat_id.toString(),
+      id: chat.chat_id,
       isTyping: false
     }))
   });
@@ -100,9 +100,8 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
         isTyping:
           connectedClients
             .get(member.id)
-            ?.chats.find(
-              (memberChat) => memberChat.id === chat.chat_id.toString()
-            )?.isTyping || false
+            ?.chats.find((memberChat) => memberChat.id === chat.chat_id)
+            ?.isTyping || false
       }))
     }))
   };

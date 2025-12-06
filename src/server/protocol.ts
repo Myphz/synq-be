@@ -11,7 +11,7 @@ const messageSchema = z.object({
 // ** SHARED MESSAGES ** (both client AND server may send these!)
 const readMessageSchema = z.object({
   type: z.literal("READ_MESSAGE"),
-  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  chatId: z.number(),
   data: z.object({
     messageId: z.string().uuid()
   })
@@ -22,7 +22,7 @@ const sharedMessagesSchema = z.discriminatedUnion("type", [readMessageSchema]);
 // ** SERVER ONLY MESSAGES ** (Only the server sends these!)
 const receiveMessageSchema = z.object({
   type: z.literal("RECEIVE_MESSAGE"),
-  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  chatId: z.number(),
   userId: z.string().uuid(),
   data: z.object({
     id: z.string().uuid(),
@@ -57,7 +57,7 @@ const initialSyncSchema = z.object({
 const updateUserStatusSchema = z.object({
   type: z.literal("UPDATE_USER_STATUS"),
   userId: z.string().uuid(),
-  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  chatId: z.number(),
   data: z.object({
     isOnline: z.boolean().optional(),
     isTyping: z.boolean().optional(),
@@ -67,7 +67,7 @@ const updateUserStatusSchema = z.object({
 
 const getMessagesSchema = z.object({
   type: z.literal("GET_MESSAGES"),
-  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  chatId: z.number(),
   data: z.object({
     messages: z.array(messageSchema)
   })
@@ -86,7 +86,7 @@ export const serverMessageSchema = sharedMessagesSchema.or(
 
 const updateUserTypingSchema = z.object({
   type: z.literal("UPDATE_USER_TYPING"),
-  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  chatId: z.number(),
   data: z.object({
     isTyping: z.boolean()
   })
@@ -94,7 +94,7 @@ const updateUserTypingSchema = z.object({
 
 const sendMessageSchema = z.object({
   type: z.literal("SEND_MESSAGE"),
-  chatId: z.string().regex(/^\d+$/).or(z.number()),
+  chatId: z.number(),
   data: z.object({
     content: z.string()
   })
@@ -102,7 +102,7 @@ const sendMessageSchema = z.object({
 
 const requestMessagesSchema = z.object({
   type: z.literal("REQUEST_MESSAGES"),
-  chatId: z.string().regex(/^\d+$/).or(z.number())
+  chatId: z.number()
 });
 
 export const clientMessageSchema = sharedMessagesSchema.or(

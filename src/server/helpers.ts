@@ -6,7 +6,7 @@ import { ServerMessage } from "./protocol.js";
 type SendBroadcastMessageParams = {
   ws?: AuthSocket;
   message: ServerMessage;
-  chatId: string | number;
+  chatId: number;
 };
 
 export const sendBroadcastMessage = ({

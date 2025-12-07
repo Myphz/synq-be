@@ -114,7 +114,7 @@ export const processMessage = async (
         .select("*")
         .eq("chat_id", chatId)
         .order("created_at", { ascending: false })
-        .limit(100)
+        .limit(5000)
         .throwOnError();
 
       const message = {

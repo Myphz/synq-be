@@ -113,12 +113,13 @@ export const onConnectionClose = (ws: AuthSocket) => {
   const { user, supabaseClient } = ws.getUserData();
 
   const userData = connectedClients.get(user.id);
+  connectedClients.delete(user.id);
+
   if (!userData)
     return console.log(
       "WARN: onConnectionClose: can't get chats for disconnected user"
     );
 
-  connectedClients.delete(user.id);
   const now = new Date().toISOString();
 
   userData.chats.forEach((chat) => {

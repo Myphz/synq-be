@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
-import { getConnectedClient, sendBroadcastMessage } from "./helpers.js";
+import { getConnectedClient, send, sendBroadcastMessage } from "./helpers.js";
 import { sendNotification } from "./notifications.js";
 import {
   ClientMessage,
@@ -131,7 +131,7 @@ export const processMessage = async (
         }
       } satisfies ServerMessage;
 
-      ws.send(JSON.stringify(message));
+      send({ ws, message });
     }
   }
 

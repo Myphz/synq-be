@@ -5,7 +5,7 @@ import { AuthData, AuthSocket } from "../types/utils.js";
 import { enhanceRequest } from "../utils/enhance.js";
 import { parseMessage } from "../utils/zod.js";
 import { connectedClients } from "./clients.js";
-import { sendBroadcastMessage } from "./helpers.js";
+import { send, sendBroadcastMessage } from "./helpers.js";
 import { processMessage } from "./process-message.js";
 import type { ClientMessage, ServerMessage } from "./protocol.js";
 
@@ -112,7 +112,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
     }))
   };
 
-  ws.send(JSON.stringify(initialSyncData));
+  send({ ws, message: initialSyncData });
 };
 
 export const onConnectionClose = (ws: AuthSocket) => {

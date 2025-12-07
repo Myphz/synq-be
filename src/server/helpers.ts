@@ -9,6 +9,11 @@ type SendBroadcastMessageParams = {
   chatId: number;
 };
 
+type SendMessageParams = {
+  ws: AuthSocket;
+  message: ServerMessage;
+};
+
 export const sendBroadcastMessage = ({
   ws,
   message,
@@ -20,4 +25,15 @@ export const getConnectedClient = (id: string) => {
   const ret = connectedClients.get(id);
   if (!ret) throw new Error("getConnectedClient: can't find client!");
   return ret;
+};
+
+export const send = async ({ ws, message }: SendMessageParams) => {
+  try {
+    ws.send(JSON.stringify(message));
+  } catch {
+    try {
+      const { user } = ws.getUserData();
+      connectedClients.delete(user.id);
+    } catch {}
+  }
 };

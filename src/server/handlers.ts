@@ -58,7 +58,13 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
 
   // Subscribe ws to all of its chats
   chatsData.forEach((chat) => {
-    ws.subscribe(chat.chat_id.toString());
+    // Socket might be disconnected already for some reason
+    try {
+      ws.subscribe(chat.chat_id.toString());
+    } catch {
+      connectedClients.delete(user.id);
+      return;
+    }
 
     // Notify everyone else of our new online status
     const message: ServerMessage = {

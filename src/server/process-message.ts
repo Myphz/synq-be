@@ -85,6 +85,7 @@ export const processMessage = async (
         sendNotification({
           userId: member,
           message: content,
+          messageId: id,
           senderId: user.id,
           chatId
         })

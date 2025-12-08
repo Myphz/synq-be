@@ -5,6 +5,7 @@ type SendNotificationParams = {
   userId: string;
   senderId: string;
   message: string;
+  messageId: string;
   chatId: number;
 };
 
@@ -12,6 +13,7 @@ export const sendNotification = async ({
   userId,
   senderId,
   message,
+  messageId,
   chatId
 }: SendNotificationParams) => {
   const {
@@ -43,7 +45,8 @@ export const sendNotification = async ({
         ...(avatar && { imageUrl: avatar })
       },
       data: {
-        chatId: chatId.toString()
+        chatId: chatId.toString(),
+        messageId
       },
       // Add default sound
       android: {

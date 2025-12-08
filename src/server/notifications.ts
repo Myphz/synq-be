@@ -48,11 +48,11 @@ export const sendNotification = async ({
         chatId: chatId.toString(),
         messageId
       },
-      // Add default sound
       android: {
         priority: "high",
         notification: {
-          sound: "default"
+          sound: "default",
+          icon: "notification_icon"
         }
       },
       apns: {

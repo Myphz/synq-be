@@ -12,6 +12,13 @@ type SendBroadcastMessageParams = {
 type SendMessageParams = {
   ws: AuthSocket;
   message: ServerMessage;
+  userId?: string;
+};
+
+type SubscribeParams = {
+  ws: AuthSocket;
+  chatId: number;
+  userId?: string;
 };
 
 export const sendBroadcastMessage = ({
@@ -27,13 +34,28 @@ export const getConnectedClient = (id: string) => {
   return ret;
 };
 
-export const send = async ({ ws, message }: SendMessageParams) => {
+export const send = ({ ws, message, userId }: SendMessageParams) => {
   try {
     ws.send(JSON.stringify(message));
+    return true;
   } catch {
     try {
-      const { user } = ws.getUserData();
-      connectedClients.delete(user.id);
+      const id = userId || ws.getUserData().user.id;
+      connectedClients.delete(id);
+    } catch {}
+  }
+};
+
+export const subscribe = ({ ws, chatId, userId }: SubscribeParams) => {
+  try {
+    if (ws.isSubscribed(chatId.toString())) return true;
+
+    ws.subscribe(chatId.toString());
+    return true;
+  } catch {
+    try {
+      const id = userId || ws.getUserData().user.id;
+      connectedClients.delete(id);
     } catch {}
   }
 };

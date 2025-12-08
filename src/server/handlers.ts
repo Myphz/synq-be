@@ -5,7 +5,7 @@ import { AuthData, AuthSocket } from "../types/utils.js";
 import { enhanceRequest } from "../utils/enhance.js";
 import { parseMessage } from "../utils/zod.js";
 import { connectedClients } from "./clients.js";
-import { send, sendBroadcastMessage } from "./helpers.js";
+import { send, sendBroadcastMessage, subscribe } from "./helpers.js";
 import { processMessage } from "./process-message.js";
 import type { ClientMessage, ServerMessage } from "./protocol.js";
 
@@ -42,9 +42,7 @@ export const onUpgradeRequest: WebSocketBehavior<AuthData>["upgrade"] = async (
   });
 };
 
-export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
-  ws
-) => {
+export const onNewConnection = async (ws: AuthSocket) => {
   const { user, supabaseClient } = ws.getUserData();
   const { chats: chatsData } = await getInitialSyncData(supabaseClient);
 
@@ -58,13 +56,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
 
   // Subscribe ws to all of its chats
   chatsData.forEach((chat) => {
-    // Socket might be disconnected already for some reason
-    try {
-      ws.subscribe(chat.chat_id.toString());
-    } catch {
-      connectedClients.delete(user.id);
-      return;
-    }
+    if (!subscribe({ ws, chatId: chat.chat_id, userId: user.id })) return;
 
     // Notify everyone else of our new online status
     const message: ServerMessage = {
@@ -112,7 +104,7 @@ export const onNewConnection: WebSocketBehavior<AuthData>["open"] = async (
     }))
   };
 
-  send({ ws, message: initialSyncData });
+  send({ ws, message: initialSyncData, userId: user.id });
 };
 
 export const onConnectionClose = (ws: AuthSocket) => {

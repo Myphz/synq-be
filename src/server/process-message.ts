@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
+import { onNewConnection } from "./handlers.js";
 import { getConnectedClient, send, sendBroadcastMessage } from "./helpers.js";
 import { sendNotification } from "./notifications.js";
 import {
@@ -54,10 +55,30 @@ export const processMessage = async (
 
       sendBroadcastMessage({ chatId, message: socketMessage });
 
-      // Send notification to offline members
       const members = await getChatMembers(supabaseClient, chatId);
+
+      // Make sure other online members are subscribed to this chat
+      // (they may not be subscribed if it's a new chat - they may not know of this chat!)
+      const onlineMembersNotSubscribed = members.filter((member) => {
+        if (member === user.id) return false;
+
+        const userData = connectedClients.get(member);
+        if (!userData) return false;
+
+        return userData.ws.isSubscribed(chatId.toString());
+      });
+
+      if (onlineMembersNotSubscribed.length) {
+        onlineMembersNotSubscribed.forEach((member) => {
+          const ws = connectedClients.get(member)!.ws;
+          // Re-initialize client to make sure he has the latest updates
+          onNewConnection(ws);
+        });
+      }
+
+      // Send notification to offline members
       const offlineMembers = members.filter(
-        (member) => !connectedClients.has(member)
+        (member) => member !== user.id && !connectedClients.has(member)
       );
 
       offlineMembers.forEach((member) =>
@@ -131,13 +152,12 @@ export const processMessage = async (
         }
       } satisfies ServerMessage;
 
-      send({ ws, message });
+      send({ ws, message, userId: user.id });
     }
   }
 
   // Broadcast message to everyone if it's a server-allowed message
   const isServerMessage = serverMessageSchema.safeParse(message);
-  if (isServerMessage.success) {
+  if (isServerMessage.success)
     sendBroadcastMessage({ chatId, message: isServerMessage.data });
-  }
 };

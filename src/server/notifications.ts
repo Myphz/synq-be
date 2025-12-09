@@ -45,12 +45,12 @@ export const sendNotification = async ({
         ...(avatar && { imageUrl: avatar })
       },
       data: {
-        chatId: chatId.toString(),
-        messageId
+        chatId: chatId.toString()
       },
       android: {
         priority: "high",
         notification: {
+          tag: messageId,
           sound: "default",
           icon: "notification_icon"
         }

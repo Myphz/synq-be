@@ -57,6 +57,7 @@ export const processMessage = async (
         data: {
           id,
           content: processedContent,
+          ...(image && { image }),
           sentAt: now
         }
       } satisfies ServerMessage;
@@ -156,6 +157,7 @@ export const processMessage = async (
             content: msg.text,
             senderId: msg.user_id,
             sentAt: msg.created_at,
+            ...(msg.image_url && { image: msg.image_url }),
             isRead: msg.is_read || false
           }))
         }

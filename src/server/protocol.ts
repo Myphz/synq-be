@@ -5,6 +5,7 @@ const messageSchema = z.object({
   sentAt: z.string(),
   senderId: z.string(),
   content: z.string(),
+  image: z.url().optional(),
   isRead: z.boolean()
 });
 
@@ -27,6 +28,7 @@ const receiveMessageSchema = z.object({
   data: z.object({
     id: z.uuid(),
     content: z.string(),
+    image: z.url().optional(),
     sentAt: z.string()
   })
 });

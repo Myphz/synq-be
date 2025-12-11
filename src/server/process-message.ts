@@ -35,12 +35,18 @@ export const processMessage = async (
   switch (message.type) {
     case "SEND_MESSAGE": {
       const { content } = message.data;
+      const processedContent = content.trim();
       const now = new Date().toISOString();
       const id = uuidv4();
 
       supabaseClient
         .from("messages")
-        .insert({ chat_id: chatId, text: content, id, created_at: now })
+        .insert({
+          chat_id: chatId,
+          text: processedContent,
+          id,
+          created_at: now
+        })
         .then();
 
       const socketMessage = {
@@ -49,7 +55,7 @@ export const processMessage = async (
         chatId,
         data: {
           id,
-          content,
+          content: processedContent,
           sentAt: now
         }
       } satisfies ServerMessage;

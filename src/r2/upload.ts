@@ -20,5 +20,6 @@ export const getPresignedUrlForUpload = async ({
     ContentType: contentType
   });
 
-  return await getSignedUrl(s3Client, cmd, { expiresIn: 60 });
+  const signedUrl = await getSignedUrl(s3Client, cmd, { expiresIn: 60 });
+  return { signedUrl, key };
 };

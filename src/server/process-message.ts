@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { getPresignedUrlForUpload } from "../r2/upload.js";
 import { getChatMembers } from "../supabase/api.js";
 import { AuthSocket } from "../types/utils.js";
 import { connectedClients } from "./clients.js";
@@ -154,11 +155,28 @@ export const processMessage = async (
       } satisfies ServerMessage;
 
       send({ ws, message, userId: user.id });
+
+      break;
+    }
+
+    case "REQUEST_UPLOAD": {
+      const { signedUrl, key } = await getPresignedUrlForUpload({
+        keyPrefix: chatId.toString(),
+        contentType: "image/webp"
+      });
+
+      const message = {
+        type: "UPLOAD_PERMIT_GRANTED",
+        data: { signedUrl, key }
+      } satisfies ServerMessage;
+
+      send({ ws, message, userId: user.id });
+      break;
     }
   }
 
-  // Broadcast message to everyone if it's a server-allowed message
-  const isServerMessage = serverMessageSchema.safeParse(message);
-  if (isServerMessage.success)
-    sendBroadcastMessage({ chatId, message: isServerMessage.data });
+  // Broadcast message if the client message is also a server-allowed message
+  const { success: isServerMessage, data: serverMessage } =
+    serverMessageSchema.safeParse(message);
+  if (isServerMessage) sendBroadcastMessage({ chatId, message: serverMessage });
 };

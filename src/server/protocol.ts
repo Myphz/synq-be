@@ -76,7 +76,8 @@ const getMessagesSchema = z.object({
 const uploadPermitGrantedSchema = z.object({
   type: z.literal("UPLOAD_PERMIT_GRANTED"),
   data: z.object({
-    signedUrl: z.string()
+    signedUrl: z.string(),
+    key: z.string()
   })
 });
 

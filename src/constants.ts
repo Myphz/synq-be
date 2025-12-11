@@ -23,3 +23,13 @@ export const TELEGRAM_CHAT_ID = "644102713";
 export const FIREBASE_SERVICE_ACCOUNT = JSON.parse(
   getEnvValue("FIREBASE_SERVICE_ACCOUNT")
 );
+
+export const CLOUDFLARE_MEDIA_BUCKET = "synq-media";
+export const CLOUDFLARE_ACCOUNT_ID = getEnvValue("CLOUDFLARE_ACCOUNT_ID");
+export const CLOUDFLARE_R2_ACCESS_KEY_ID = getEnvValue(
+  "CLOUDFLARE_R2_ACCESS_KEY_ID"
+);
+export const CLOUDFLARE_R2_SECRET_ACCESS_KEY = getEnvValue(
+  "CLOUDFLARE_R2_SECRET_ACCESS_KEY"
+);
+export const CLOUDFLARE_R2_TOKEN = getEnvValue("CLOUDFLARE_R2_TOKEN");

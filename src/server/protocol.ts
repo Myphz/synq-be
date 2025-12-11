@@ -73,12 +73,20 @@ const getMessagesSchema = z.object({
   })
 });
 
+const uploadPermitGrantedSchema = z.object({
+  type: z.literal("UPLOAD_PERMIT_GRANTED"),
+  data: z.object({
+    signedUrl: z.string()
+  })
+});
+
 export const serverMessageSchema = sharedMessagesSchema.or(
   z.discriminatedUnion("type", [
     initialSyncSchema,
     updateUserStatusSchema,
     getMessagesSchema,
-    receiveMessageSchema
+    receiveMessageSchema,
+    uploadPermitGrantedSchema
   ])
 );
 
@@ -105,11 +113,17 @@ const requestMessagesSchema = z.object({
   chatId: z.number()
 });
 
+const requestUploadSchema = z.object({
+  type: z.literal("REQUEST_UPLOAD"),
+  chatId: z.number()
+});
+
 export const clientMessageSchema = sharedMessagesSchema.or(
   z.discriminatedUnion("type", [
     updateUserTypingSchema,
     sendMessageSchema,
-    requestMessagesSchema
+    requestMessagesSchema,
+    requestUploadSchema
   ])
 );
 

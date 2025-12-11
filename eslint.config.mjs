@@ -6,7 +6,6 @@ import ts from "typescript-eslint";
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   ...ts.configs.recommended,
-  prettier,
   eslintPluginUnicorn.configs["recommended"],
   {
     rules: {
@@ -37,5 +36,6 @@ export default [
   {
     files: ["src/**/*.ts"],
     ignores: ["dist/", "bundle/"]
-  }
+  },
+  prettier
 ];

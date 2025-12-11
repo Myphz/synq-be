@@ -34,7 +34,7 @@ export const processMessage = async (
 
   switch (message.type) {
     case "SEND_MESSAGE": {
-      const { content } = message.data;
+      const { content, image } = message.data;
       const processedContent = content.trim();
       const now = new Date().toISOString();
       const id = uuidv4();
@@ -42,9 +42,10 @@ export const processMessage = async (
       supabaseClient
         .from("messages")
         .insert({
-          chat_id: chatId,
-          text: processedContent,
           id,
+          chat_id: chatId,
+          ...(image && { image_url: image }),
+          text: processedContent,
           created_at: now
         })
         .then();

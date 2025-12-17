@@ -93,7 +93,8 @@ export const processMessage = async (
       offlineMembers.forEach((member) =>
         sendNotification({
           userId: member,
-          message: content,
+          content,
+          image,
           messageId: id,
           senderId: user.id,
           chatId

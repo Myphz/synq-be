@@ -4,15 +4,19 @@ import { supabaseAdmin } from "../supabase/admin.js";
 type SendNotificationParams = {
   userId: string;
   senderId: string;
-  message: string;
+  content: string;
+  image?: string;
   messageId: string;
   chatId: number;
 };
 
+const NOTIFICATION_CHANNEL_ID = "notifications";
+
 export const sendNotification = async ({
   userId,
   senderId,
-  message,
+  content,
+  image,
   messageId,
   chatId
 }: SendNotificationParams) => {
@@ -28,6 +32,7 @@ export const sendNotification = async ({
   if (!token) return;
 
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     data: { name, avatar_url: avatar }
   } = await supabaseAdmin
     .from("profiles")
@@ -41,17 +46,18 @@ export const sendNotification = async ({
       token,
       notification: {
         title: name,
-        body: message,
-        ...(avatar && { imageUrl: avatar })
+        body: content,
+        ...(image && { imageUrl: image })
       },
       data: {
         chatId: chatId.toString()
       },
       android: {
+        collapseKey: chatId.toString(),
         priority: "high",
         notification: {
+          channelId: NOTIFICATION_CHANNEL_ID,
           tag: messageId,
-          sound: "default",
           icon: "notification_icon"
         }
       },

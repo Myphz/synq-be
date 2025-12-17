@@ -56,9 +56,13 @@ export const sendNotification = async ({
         collapseKey: chatId.toString(),
         priority: "high",
         notification: {
+          notificationCount: 1,
           channelId: NOTIFICATION_CHANNEL_ID,
           tag: messageId,
-          icon: "notification_icon"
+          icon: "notification_icon",
+          sticky: false,
+          priority: "max",
+          defaultSound: true
         }
       },
       apns: {
